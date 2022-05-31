@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 # Author: @fkasler aka ph3eds
 # Origional Base script: @jkadijk
 # Base decoderthread layout from the Impacket examples.
