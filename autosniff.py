@@ -172,7 +172,7 @@ class ArpTable:
         #copy the dict first so that we don't crash if the size changes during iteration
         table_copy = self.table.copy()
         #iteritems_copy = self.table.iteritems())
-        for ip, mac in table_copy.iteritems():
+        for ip, mac in table_copy.items():
             os.system("arp -i mibr -s %s %s" % (ip, mac))
             os.system("ip route add %s/32 dev mibr 2>/dev/null" % ip)
 
@@ -454,7 +454,7 @@ class Netfilter:
         logging.info("[*] NAT is ready.")
 
         if config['hidden_service']['switch'].upper() == 'ON':
-            print "[*] Create hidden services"
+            print("[*] Create hidden services")
             os.system("iptables -t nat -A PREROUTING -i %s -d %s -p %s --dport %s -j DNAT --to 169.254.66.77:%s" %
                       (self.bridge.bridgename, self.subnet.clientip, config['hidden_service']['kind'].lower, config['hidden_service']['rport'], config['hidden_service']['lport']))
         #clear out any default route to the network
@@ -477,14 +477,14 @@ class Netfilter:
         if config['auto_run']['switch'].upper() == 'ON':
             myshell = subprocess.call(config['auto_run']['command'])
 
-        print """
+        print("""
 ************************************************************************
 * Warning!                                                             *
 * nmap uses raw sockets so NAT will NOT work for host discovery.       *
 * For your own safety we block all outgoing ARP traffic with ebtables. *
 * You will need to provide the --send-ip parameter to get any results. *
 ************************************************************************
-"""
+""")
 
 class Bridge:
     subnet = None
@@ -559,7 +559,7 @@ class Bridge:
 
 def main():
     if os.getuid() != 0:
-        print "You need to run BitM as root!"
+        print("You need to run BitM as root!")
         sys.exit(1)
 
     dependencies = ['macchanger', 'brctl', 'ip', 'sysctl', 'arp',
@@ -567,7 +567,7 @@ def main():
 
     for d in dependencies:
         if os.system("which %s >/dev/null" % d):
-            print "Command '%s' is missing. Please install." % d
+            print("Command '%s' is missing. Please install." % d)
             sys.exit(1)
 
     subnet = Subnet(config)
@@ -582,29 +582,29 @@ def main():
 
     decoder.start()
 
-    print "Listening on %s: net=%s, mask=%s, linktype=%d" % \
-          (bridge.bridgename, decoder.pcap.getnet(), decoder.pcap.getmask(), decoder.pcap.datalink())
+    print("Listening on %s: net=%s, mask=%s, linktype=%d" % \
+          (bridge.bridgename, decoder.pcap.getnet(), decoder.pcap.getmask(), decoder.pcap.datalink()))
 
-    print "Bridge MAC: %s" % (bridge.getmac('mibr'))
+    print("Bridge MAC: %s" % (bridge.getmac('mibr')))
 
     while True:
         if subnet.clientip and subnet.gatewaymac and subnet.clientmac:
-            print subnet
+            print(subnet)
             logging.info("%s" % subnet)
 
             bridge.setinterfacesides()
             if config['radio_silence'].upper() == 'OFF':
                 netfilter.updatetables()
             else:
-                print """
+                print("""
 ******************************************************
 * Radiosilence is enabled.                           *
 * Not setting up NAT and disallow outgoing traffic." *
-******************************************************\n"""
+******************************************************\n""")
             break
         else:
-            print "not enough info..."
-            print subnet
+            print("not enough info...")
+            print(subnet)
         time.sleep(5)
 
     # arp setup
