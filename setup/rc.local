@@ -34,9 +34,9 @@ touch /root/tools/dolos_cloak/logs/session.log
 cat /root/tools/dolos_cloak/logs/session.log >> /root/tools/dolos_cloak/logs/history.log
 > /root/tools/dolos_cloak/logs/session.log
 python /root/tools/dolos_cloak/autosniff.py > /root/tools/dolos_cloak/logs/session.log 2>&1 &
-ifconfig eth0 169.254.44.44/24
-ifconfig eth0 up
-udhcpd /etc/udhcpd-eth0.conf
+#ifconfig eth0 169.254.44.44/24
+#ifconfig eth0 up
+#udhcpd /etc/udhcpd-eth0.conf
 #ifconfig wlan0 169.254.44.44/24
 #ifconfig wlan0 up
 #hostapd -B /etc/hostapd/hostapd.conf
