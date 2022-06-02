@@ -495,19 +495,18 @@ class Bridge:
     clientsiteint = None
 
     def __init__(self, bridgename, interfaces, subnet):
-        self.bridgename = bridgename
-        self.interfaces = interfaces
-        self.subnet = subnet
-        os.system("brctl addbr %s" % bridgename)
-        os.system("macchanger -r %s" % bridgename)
+        self.bridgename = bridgename #br0
+        self.interfaces = interfaces # eth0, lan0
+        self.subnet = subnet #clientmac : None, gatewaymac : None...
+        os.system("brctl addbr %s" % bridgename) # Creation du bridge 
+        os.system("macchanger -r %s" % bridgename) # Random Ip bridge
 
         for interface in [self.bridgename] + self.interfaces:
-            self.ifmacs.update({interface: self.getmac(interface)})
+            self.ifmacs.update({interface: self.getmac(interface)}) # on ajoute les adresses mac des interfaces => {eth0: aa:bb:.., lan0: aa:bb} 
             os.system("ip link set %s down" % interface)
             if config['enable_ipv6'].upper() == 'OFF':
                 os.system("sysctl -w net.ipv6.conf.%s.disable_ipv6=1" % interface)
-            os.system("sysctl -w net.ipv6.conf.%s.autoconf=0" % interface)
-            os.system("sysctl -w net.ipv6.conf.%s.accept_ra=0" % interface)
+
             if interface != bridgename:
                 os.system("brctl addif %s %s" % (bridgename, interface))
             os.system("ip link set %s promisc on" % interface)
@@ -570,12 +569,33 @@ def main():
             print("Command '%s' is missing. Please install." % d)
             sys.exit(1)
 
+
+    # On commence par creer la conf reseau à partir du fichier config :
+    #clientmac : None
+    #gatewaymac : None
+    #subnet : None
+    #minaddress : None
+    #maxaddress : None
+    #clientip : 
+    #gatewayip : 
+    #subnetmask : None
+    #dhcp : False
+    #domain_name : 
+    #dns_server : 
+
     subnet = Subnet(config)
+    
+    # On créé le Bridge en donnant en param le nom, eth0 et lan0
     bridge = Bridge("mibr", [config['iface0'],config['iface1']], subnet)
+    
+    
+
     netfilter = Netfilter(subnet, bridge)
+     
     arptable = ArpTable()
 
     bridge.up()
+    
     decoder = DecoderThread(bridge, subnet, arptable)
 
     sig = SignalHandler(decoder, bridge, netfilter)
@@ -597,10 +617,10 @@ def main():
                 netfilter.updatetables()
             else:
                 print("""
-******************************************************
-* Radiosilence is enabled.                           *
-* Not setting up NAT and disallow outgoing traffic." *
-******************************************************\n""")
+                ******************************************************
+                * Radiosilence is enabled.                           *
+                * Not setting up NAT and disallow outgoing traffic." *
+                ******************************************************\n""")
             break
         else:
             print("not enough info...")
