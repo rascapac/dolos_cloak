@@ -10,6 +10,7 @@ sudo apt install ebtables
 sudo apt install arptables
 sudo apt install macchanger
 sudo apt install make
+sudo apt install python3-pcapy
 
 #Requirements
 pip install impacket 

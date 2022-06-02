@@ -517,7 +517,8 @@ class Bridge:
         os.system("echo 8 > /sys/class/net/mibr/bridge/group_fwd_mask")
 
     def getmac(self, iface):
-        res = cmd("ip link show %s" % iface)
+        #res = cmd("ip link show %s" % iface)
+        res = os.popen('ip -o link show %s |cut -d " " -f 20' % iface).read()
         return re.search("..:..:..:..:..:..", res).group(0)
 
     def srcmac2bridgeint(self, srcmac):
@@ -587,15 +588,13 @@ def main():
     
     # On créé le Bridge en donnant en param le nom, eth0 et lan0
     bridge = Bridge("mibr", [config['iface0'],config['iface1']], subnet)
-    
+
     
 
     netfilter = Netfilter(subnet, bridge)
-     
     arptable = ArpTable()
 
     bridge.up()
-    
     decoder = DecoderThread(bridge, subnet, arptable)
 
     sig = SignalHandler(decoder, bridge, netfilter)
@@ -617,10 +616,10 @@ def main():
                 netfilter.updatetables()
             else:
                 print("""
-                ******************************************************
-                * Radiosilence is enabled.                           *
-                * Not setting up NAT and disallow outgoing traffic." *
-                ******************************************************\n""")
+    ******************************************************
+    * Radiosilence is enabled.                           *
+    * Not setting up NAT and disallow outgoing traffic." *
+    ******************************************************\n""")
             break
         else:
             print("not enough info...")
